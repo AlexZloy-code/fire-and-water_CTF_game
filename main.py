@@ -29,6 +29,10 @@ class Player:
         self.vy = 0  # скорость персонажа по оси Оу, направленной вниз
         self.x_file = 0  # положение верхнего левого угла player_surface в файле
         self.y_file = 0  # положение верхнего левого угла player_surface в файле
+        self.north = False  # состояние возможности прыгнуть вверх
+        self.south = False  # состояние возможности упасть вниз
+        self.west = False  # состояние возможности убежать влево
+        self.east = False  # состояние возможности убежать вправо
 
     def coordinate_input(self, input_filename, player_number):
         """ функция записывает координаты игрока в базу данных """
@@ -71,6 +75,71 @@ class Player:
             self.y -= 3
         else:
             self.x += 3
+        self.x_file = self.x // 20
+        self.y_file = self.y // 20
+
+    def check_possible_movements(self, input_filename):
+        """ функция проверяет возможность движения по всем направлениям """
+        self.north = False
+        self.south = False
+        self.west = False
+        self.east = False
+
+        with open(input_filename, 'r') as input_file:
+            file_massive = input_file.readlines()  # file_massive - массив строк
+            # вида [line0, line1, ..., line(len(file_massive) - 1)]
+
+            for lien_number in range(len(file_massive)):  # убирает /n в конце каждой строки
+                file_massive[lien_number] = file_massive[lien_number].rstrip()
+
+            # далее цикл проверяет, куда может двинуться по вертикали персонаж в данный момент времени
+            for degree in range(2):  # degree - степень. 0 - возможности прыгнуть вверх, 1 - возможности упасть вниз
+                if self.y_file == (len(file_massive) - 1) * degree - 2 * degree:  # если персонаж на нулевой строке, то
+                    # он не прыгнет вверх, если персонаж на последней строке, то он не упадет вниз
+                    # нужно отметить, что касаяюсь нижней границы функция выдает True
+                    pass
+                else:
+                    line = file_massive[self.y_file - (-1) ** degree].rstrip()  # предыдущая/последующая строка
+                    count = 0  # кол-во файловых ячеек, которые позволяют свободно передвигаться
+                    if self.x % 20 > 0:  # проверяет, персонаж находится в 2 или 3 горизонтальных ячейках
+                        length = 3  # length - кол-во "свободных" ячеек
+                    else:
+                        length = 2
+                    for i in range(length):  # перебирает каждыю ячейку на возможность свободно передвигаться
+                        if line[self.x_file + i] == '1':
+                            break
+                        elif line[self.x_file + i] == '0' or line[self.x_file + i] == '9':
+                            count += 1
+                    if count == length:
+                        if degree == 0:
+                            self.north = True
+                        else:
+                            self.south = True
+
+            # далее цикл проверяет, куда может двинуться по горизонтали персонаж в данный момент времени
+            for degree in range(2):  # degree - степень. 0 - возможности побежать влево, 1 - возможности побежать вправо
+                if self.x_file == (len(file_massive[self.y_file]) - 1) * degree - 2 * degree:  # если персонаж на
+                    # нулевой строке, то он не пойдет налево, если персонаж на последней строке, то он не пойдет направо
+
+                    pass
+                else:
+                    count = 0
+                    if self.y % 20 > 0:  # проверяет, персонаж находится в 2 или 3 вертикальных ячейках
+                        height = 3  # height - кол-во "свободных" ячеек
+                    else:
+                        height = 2
+                    for i in range(height):  # перебирает каждыю ячейку на возможность свободно передвигаться
+                        x_check = (self.x_file + 1) - (-2) ** degree + 1 * (degree - 1)  # единая формула для ячеек
+                        if file_massive[self.y_file + i][x_check] == '1':
+                            break
+                        elif file_massive[self.y_file + i][x_check] == '0' or \
+                        file_massive[self.y_file + i][x_check] == '9':
+                            count += 1
+                    if count == height:
+                        if degree == 0:
+                            self.west = True
+                        else:
+                            self.east = True
 
 
 finished = False
