@@ -20,22 +20,61 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))  # игровая площад
 screen.fill((255, 255, 255))
 
 
+class Draw:
+
+    def __init__(self):
+        self.wall = pygame.image.load('pictures//walls//wall.jpg')
+
+    def draw_wall(self, file_massive):
+        for line_count, line in enumerate(file_massive):
+            for letter_count, letter in enumerate(line):
+                if letter == '1':
+                    screen.blit(self.wall, (DELTA * letter_count, DELTA * line_count))
+
+
 class Map:
 
     @staticmethod
     def _load_map(input_filename):
+        """ выписывает всю информацию об уровне в массив """
+
         with open(input_filename, 'r') as input_file:
-            file_massive = input_file.readlines()
+            file_massive = input_file.readlines()  # массив строк
             for lines_count in range(len(file_massive)):
                 file_massive[lines_count] = file_massive[lines_count].rstrip()
         return file_massive
 
     def __init__(self, input_filename):
+        """
+        информация о классе
+        self.storage - массив строк
+        """
+
         self.storage = self._load_map(input_filename)
 
     @staticmethod
     def to_map_coordinates(obj):
+        """ возвращает координаты персонажа в файле (уровне). type: integer """
+
         return obj.x // DELTA, obj.y // DELTA
+
+    def coordinate(self, player_number):
+        """ функция считывает координаты игрока из карты """
+
+        y_file = -1  # y_file - координата игрока по y - 1
+        number = -1  # номер игрока
+        for line in self.storage:
+            y_file += 1
+            x_file = -1  # x_file - координата игрока по x - 1
+            for letter in line:
+                x_file += 1
+                if letter == '9':  # 9 - цифра-индетификатор игрока
+                    number += 1
+                    if number == player_number:
+                        x_champion = x_file * DELTA
+                        y_champion = y_file * DELTA
+
+                        return x_champion, y_champion
 
     def collision(self, obj):
         """ функция говорит о дозволенных движениях персонажа по оси Оу"""
@@ -125,7 +164,7 @@ class Player:
 
         self.x = 0
         self.y = 0
-        self.vx = 3
+        self.vx = 4
         self.vy = 0
         self.x_file = 0
         self.y_file = 0
@@ -135,27 +174,17 @@ class Player:
         self.east = False
 
     def set_possibility(self, abilities):
-        self.north = abilities["north"]
-        self.south = abilities["south"]
+        """ передает данные о дозволенном движении перонажа """
+
+        self.north = abilities['north']
+        self.south = abilities['south']
         self.west = abilities['west']
         self.east = abilities['east']
 
-    def coordinate_input(self, input_filename, player_number):
+    def coordinate_input(self, data):
         """ функция записывает координаты игрока в базу данных """
 
-        with open(input_filename, 'r') as input_file:
-            y_file = -1  # y_file - координата игрока по y - 1
-            number = 0  # номер игрока
-            for line in input_file:
-                y_file += 1
-                x_file = -1  # x_file - координата игрока по x - 1
-                for letter in line:
-                    x_file += 1
-                    if letter == '9':  # 9 - цифра-индетификатор игрока
-                        number += 1
-                        if number == player_number:
-                            self.x = x_file * DELTA
-                            self.y = y_file * DELTA
+        self.x, self.y = data
 
     def draw(self):
         """ рисует поверхность и персонажа на этой поверхности """
@@ -176,24 +205,29 @@ class Player:
         k - номер абстрактного списка [left, up, right]
         """
 
-        if k == 0 and self.west or k == 0 and not self.west and self.x > self.x_file * DELTA + self.vx:  # если путь
-            # свободен или около свободен
+        if k == 0 and self.west or k == 0 and\
+                not self.west and self.x > self.x_file * DELTA + self.vx and self.x % DELTA > 0:  # если путь
+            # свободен или около свободен, то есть позволяет приблизиться к стенке несмотря на False
 
             self.x -= self.vx
-        elif k == 1 and self.north and self.vy == 0:
-            self.vy = -15
-        elif k == 2 and self.east or k == 2 and not self.east and self.x < (self.x_file + 1) * DELTA - self.vx:  # если
-            # путь свободен или около свободен
+        elif k == 1 and self.north and self.vy == 0 and not self.south or \
+                (k == 1 and self.y > self.y_file * DELTA - self.vy and self.vy == 0 and not self.south):
+            # условие осуществления прыжка, позволяет приблизиться к потолку несмотря на False
+
+            self.vy = -13
+        elif k == 2 and self.east or k == 2 and\
+                not self.east and self.x < (self.x_file + 1) * DELTA - self.vx and self.x % DELTA > 0:  # если
+            # путь свободен или около свободен, то есть позволяет приблизиться к стенке несмотря на False
 
             self.x += self.vx
 
     def move(self):
-        """ функция, которая отвечает за непрерывное движение персонажа по оси Оу"""
+        """ функция, которая отвечает за непрерывное движение персонажа по оси Оу и за вычисление новых координат"""
 
         if self.south and self.vy >= 0:
             self.y += self.vy
             self.vy += 1
-        elif not self.south and self.vy > 0:
+        elif not self.south and self.vy >= 0:
             self.vy = 0
             self.y -= self.y % DELTA
             self.y += DELTA - 1
@@ -201,7 +235,10 @@ class Player:
             self.y += self.vy
             self.vy += 1
         elif not self.north and self.vy < 0:
-            self.vy = -self.vy
+            if self.y > self.y_file * DELTA - self.vy:
+                self.y += self.vy
+            else:
+                self.vy = -self.vy
 
         # высчитываение нового положение персонажа в карте
         self.x_file = self.x // DELTA
@@ -209,6 +246,8 @@ class Player:
 
 
 def check_possible_movements(lvl_handler, checked_player):
+    """ возвращает инфорацию о дозволенных движениях"""
+
     oy_abilities = lvl_handler.collision(checked_player)
     checked_player.set_possibility(oy_abilities)
 
@@ -216,20 +255,21 @@ def check_possible_movements(lvl_handler, checked_player):
 finished = False
 clock = pygame.time.Clock()
 players = [Player() for _ in range(2)]  # массив из двух игроков
-Map = Map('lvl1.txt')  # предает классу Map информацию об уровне
+map = Map('lvl1.txt')  # передает классу Map информацию об уровне
+draw = Draw()
 
 while not finished:
 
     clock.tick(FPS)
     # спавнит персонажей на поле
     if not gamer_existence:
-        for count_player, Player in enumerate(players):
-            Player.coordinate_input('lvl1.txt',  count_player + 1)
-            gamer_existence = True
+        for count_player, player in enumerate(players):
+            player.coordinate_input(map.coordinate(count_player))
+        gamer_existence = True
 
     # проверяет разрешаемые направление движения
     for player in players:
-        check_possible_movements(Map, player)
+        check_possible_movements(map, player)
 
     # обработчик событий
     for event in pygame.event.get():
@@ -250,9 +290,12 @@ while not finished:
             players[motion_number // 3].to_make_it_move(motion_number % 3)
 
     # безпрерывная анимация и зарисовка персонажей
-    for count_player, Player in enumerate(players):
-        Player.move()
-        Player.draw()
+    for count_player, player in enumerate(players):
+        check_possible_movements(map, player)
+        player.move()
+        player.draw()
+
+    draw.draw_wall(map._load_map('lvl1.txt'))
 
     pygame.display.update()
     screen.fill((255, 255, 255))
