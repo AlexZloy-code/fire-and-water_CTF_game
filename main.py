@@ -15,8 +15,8 @@ CELLS = {
     'B': 'B',
     'G': 'G',
     'P': 'P',
-    'D': 'D',
-    'd': 'd',
+    'v': 'v',
+    'V': 'V',
     '9': '9',
 }  # всякие существующие ячейки. вся информация о ячейках прописана в файле cells_inf
 BUTTON_INITIALIZER = {
@@ -111,7 +111,7 @@ class Draw:
                             screen.blit(
                                 self.buttons[key_number],
                                 (obj_but.x_file * DELTA, obj_but.y_file * DELTA + DELTA / 2))
-                elif letter == gate.letter:
+                elif letter == obj_gate.letter:
                     self.draw_gates(obj_player, obj_gate, count)
 
     def draw_background(self):
@@ -144,7 +144,7 @@ class Draw:
 
         if obj_gate == gates[count]:
             # создает поверхность врат без решетки
-            if obj_gate.letter == 'D':
+            if obj_gate.letter == 'V':
                 gate_surface = self.gates[0]
             else:
                 gate_surface = self.gates[1]
@@ -250,7 +250,7 @@ class Map:
                 x_file += 1
 
                 # проверка врат
-                if letter == CELLS['d'] and len(gates) == 0 or letter == CELLS['D'] and len(gates) == 1:
+                if letter == CELLS['v'] and len(gates) == 0 or letter == CELLS['V'] and len(gates) == 1:
                     x = x_file * DELTA
                     y = y_file * DELTA
                     obj = obj_gate(x, y, letter)
