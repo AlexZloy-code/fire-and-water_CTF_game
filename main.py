@@ -15,7 +15,9 @@ CELLS = {
     'B': 'B',
     'G': 'G',
     'P': 'P',
-    '9': '9'
+    'D': 'D',
+    'd': 'd',
+    '9': '9',
 }  # всякие существующие ячейки. вся информация о ячейках прописана в файле cells_inf
 BUTTON_INITIALIZER = {
     'q': ['w', 'e'],
@@ -26,6 +28,9 @@ BUTTON_INITIALIZER = {
 gamer_dead = [False, False]
 
 pygame.init()
+
+pygame.mixer.music.load('music//music.mp3')
+pygame.mixer.music.play(-1)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # игровая площадь
 screen.fill((255, 255, 255))
@@ -71,8 +76,13 @@ class Draw:
             pygame.image.load('pictures//elements//el_5.png'),
             pygame.image.load('pictures//elements//snowman.png')
         ]
+        self.gates = [
+            pygame.image.load('pictures//gates//gate_1.png'),
+            pygame.image.load('pictures//gates//gate_2.png'),
+            pygame.image.load('pictures//gates//lattice.png')
+        ]
 
-    def draw_cells(self, file_massive, count, but):
+    def draw_cells(self, file_massive, obj_player, count, obj_but, obj_gate):
         """ отрисовывает каждую ячейку файла в pygame.screen"""
 
         # переменная для смещения волны во времени
@@ -80,24 +90,29 @@ class Draw:
 
         # обновление wave_surface прозрачный цветом
         wave_surface.fill(0)
-        if count == len(players) - 1:
-            for line_count, string in enumerate(file_massive):
-                for letter_count, letter in enumerate(string):
-                    if letter == CELLS['1']:  # отрисовывает все стены или полы
-                        screen.blit(self.wall, (DELTA * letter_count, DELTA * line_count))
-                    elif letter == CELLS['B']:  # отрисовывает голубую жидкость
-                        wave_surface.blit(self.wave_blue, (dx, 0))
-                        screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
-                    elif letter == CELLS['G']:  # отрисовывает зеленую жидкость
-                        wave_surface.blit(self.wave_green, (dx, 0))
-                        screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
-                    elif letter == CELLS['P']:  # отрисовывает розовую жидкость
-                        wave_surface.blit(self.wave_pink, (dx, 0))
-                        screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
-                    elif letter == but.letter and not but.pushed:  # отрисовывает кнопки
-                        for key_number, key in enumerate(BUTTON_INITIALIZER):
-                            if but.letter == key:
-                                screen.blit(self.buttons[key_number], (but.x_file * DELTA, but.y_file * DELTA + DELTA / 2))
+        for line_count, string in enumerate(file_massive):
+            for letter_count, letter in enumerate(string):
+                if letter == CELLS['1']:  # отрисовывает все стены или полы
+                    screen.blit(self.wall, (DELTA * letter_count, DELTA * line_count))
+                elif letter == CELLS['B']:  # отрисовывает голубую жидкость
+                    wave_surface.blit(self.wave_blue, (dx, 0))
+                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
+                elif letter == CELLS['G']:  # отрисовывает зеленую жидкость
+                    wave_surface.blit(self.wave_green, (dx, 0))
+                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
+                elif letter == CELLS['P']:  # отрисовывает розовую жидкость
+                    wave_surface.blit(self.wave_pink, (dx, 0))
+                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
+                elif letter == obj_but.letter and (not obj_but.pushed[0] and not obj_but.pushed[1]):  # отрисовывает
+                    # кнопки
+
+                    for key_number, key in enumerate(BUTTON_INITIALIZER):
+                        if obj_but.letter == key:
+                            screen.blit(
+                                self.buttons[key_number],
+                                (obj_but.x_file * DELTA, obj_but.y_file * DELTA + DELTA / 2))
+                elif letter == gate.letter:
+                    self.draw_gates(obj_player, obj_gate, count)
 
     def draw_background(self):
         """ рисует фон """
@@ -118,11 +133,36 @@ class Draw:
             player_surface = self.character_images[2 + count * 3]
         screen.blit(player_surface, (inf[1], inf[2]))
 
-    def draw_element(self, decoration):
+    def draw_element(self, element):
         """ рисует каждый декоративный элемент """
 
-        player_surface = self.stuffs[decoration.decoration_number]
-        screen.blit(player_surface, (decoration.x * DELTA, decoration.y * DELTA))
+        player_surface = self.stuffs[element.decoration_number]
+        screen.blit(player_surface, (element.x * DELTA, element.y * DELTA))
+
+    def draw_gates(self, obj_player, obj_gate, count):
+        """ рисует врата и отвечает за динамику решеток """
+
+        if obj_gate == gates[count]:
+            # создает поверхность врат без решетки
+            if obj_gate.letter == 'D':
+                gate_surface = self.gates[0]
+            else:
+                gate_surface = self.gates[1]
+
+            # создает поверхность решетки
+            if obj_gate.x - 10 < obj_player.x < obj_gate.x + 40 and\
+                    obj_gate.y + 60 > obj_player.y > obj_gate.y:
+                if obj_gate.y_lattice >= -60:
+                    obj_gate.y_lattice -= 2
+            else:
+                if obj_gate.y_lattice < 0:
+                    obj_gate.y_lattice += 2
+
+            # отображает все поверхности на игровое окно
+            lattice_surface = pygame.Surface((40, 60), pygame.SRCALPHA)
+            lattice_surface.blit(self.gates[2], (0, obj_gate.y_lattice))
+            screen.blit(gate_surface, (obj_gate.x, obj_gate.y - 10))
+            screen.blit(lattice_surface, (obj_gate.x + 11, obj_gate.y))
 
 
 class Map:
@@ -151,16 +191,16 @@ class Map:
         ]
 
     def player_initializer(self, symbols, stuff):
-        """ создает персонажей """
+        """ помещает в массив персонажей всех персонажей """
 
         global players
-        y_file = -1  # y_file - координата объекта по y - 1
+        y_file = -1  # y_file - координата объекта по y
         for string in self.storage:
             y_file += 1
-            x_file = -1  # x_file - координата объекта по x - 1
+            x_file = -1  # x_file - координата объекта по x
             for letter in string:
                 x_file += 1
-                for symbol in symbols:  # ищет все объекты, перебирает каждый символ-инициализатор
+                for symbol in symbols:  # ищет всех персонажей, перебирает каждый символ-инициализатор
                     if letter == symbol:
                         x = x_file * DELTA
                         y = y_file * DELTA
@@ -168,18 +208,19 @@ class Map:
                         players.append(obj)
 
     def button_fence_initializer(self, symbols, obj_button, obj_fence):
-        """ создает кнопки и баррикады """
+        """ помещает в массив класса соответствующий объект: button, fence, door """
 
         global buttons, fences
         buttons = [[], [], []]
         fences = [[], [], []]
-        y_file = -1  # y_file - координата ограды по y - 1
+        y_file = -1  # y_file - координата объекта по y
         for string in self.storage:
             y_file += 1
-            x_file = -1  # x_file - координата ограды по x - 1
+            x_file = -1  # x_file - координата объекта по x
             for letter in string:
                 x_file += 1
-                for symbol_count, symbol in enumerate(symbols):  # ищет все ограждения, перебирает каждый
+
+                for symbol_count, symbol in enumerate(symbols):  # ищет все объекты, перебирает каждый
                     # символ-инициализатор
 
                     # проверка кнопки
@@ -197,8 +238,28 @@ class Map:
                             obj = obj_fence(x, y, element)
                             fences[symbol_count].append(obj)
 
+    def gate_initializer(self, obj_gate):
+        """ помещает в массив класса соответствующий объект: button, fence, door """
+
+        global gates
+        y_file = -1  # y_file - координата объекта по y
+        for string in self.storage:
+            y_file += 1
+            x_file = -1  # x_file - координата объекта по x
+            for letter in string:
+                x_file += 1
+
+                # проверка врат
+                if letter == CELLS['d'] and len(gates) == 0 or letter == CELLS['D'] and len(gates) == 1:
+                    x = x_file * DELTA
+                    y = y_file * DELTA
+                    obj = obj_gate(x, y, letter)
+                    gates.append(obj)
+        if len(gates) < 2:
+            self.gate_initializer(obj_gate)
+
     def element_initializer(self, obj_decoration):
-        """ инициализирует каждый декоративынй элемент """
+        """ помещает в массив декорации каждую декорацию """
 
         global decorations
         y_file = -1  # y_file - координата ограды по y - 1
@@ -219,7 +280,7 @@ class Map:
     def draw_fence(self, obj_fence, obj_button):
         """ отрисовывает баррикады, описывает поведение баррикад """
 
-        if obj_button.pushed:
+        if obj_button.pushed[0] or obj_button.pushed[1]:
             if obj_fence.letter == BUTTON_INITIALIZER[obj_button.letter][0]:
                 for height in range(3):
                     self.storage[obj_fence.y // DELTA + height] = \
@@ -250,10 +311,9 @@ class Map:
                         self.storage[obj_fence.y // DELTA][obj_fence.x // DELTA + length + 1:]
 
     def collision(self, obj, champ_number, but):
-        """ функция говорит о дозволенных движениях персонажа по оси Оу"""
+        """ взаоимдействие персонажа с каждой ячейкой из файла"""
 
-        if champ_number == 0:
-            but.pushed = False
+        but.pushed[champ_number] = False
         obj.north, obj.south, obj.west, obj.east, obj.alive = False, False, False, False, True
 
         # проверяет разрешаемые направление движения по оси Оy
@@ -325,7 +385,7 @@ class Map:
                 # если персонаж столкнулся с кнопкой, то кнопка нажимается
                 for button_position_check in range(obj.x_file, obj.x_file + 3):
                     if self.storage[obj.y_file + 2][button_position_check] == but.letter:
-                        but.pushed = True
+                        but.pushed[champ_number] = True
 
                 for cell_number in range(height):  # перебирает каждыю ячейку на возможность свободно передвигаться
                     # cell_number - порядок выбранной ячейки
@@ -351,7 +411,7 @@ class Button:
         self.x_file, self.y_file - файловые координаты кнопки
         """
 
-        self.pushed = False
+        self.pushed = [False, False]
         self.letter = letter
         self.x_file = x // DELTA
         self.y_file = y // DELTA
@@ -374,6 +434,22 @@ class Fence:
         self.letter = letter
         self.x = x
         self.y = y
+
+
+class Gate:
+
+    def __init__(self, x, y, letter):
+        """
+        информация о каждой двери
+        self.letter - символ-индетификатор баррикады: (w, e, s, d, x, c)
+        self.x, self.y - координаты левого правого угла
+        """
+
+        self.x = x
+        self.y = y
+        self.x_lattice = 0
+        self.y_lattice = 0
+        self.letter = letter
 
 
 class Decoration:
@@ -486,13 +562,15 @@ clock = pygame.time.Clock()
 players = []  # массив из игроков
 buttons = []  # массив из кнопок
 fences = []  # массив из ограды
+gates = []  # массив из ворот
 decorations = []  # массив из декоратинвых элементов
 map = Map('lvl1.txt')  # передает классу Map информацию об уровне
 draw = Draw()  # класс отрисовки
 
-# инициализирует кнопки и персонажей
+# инициализирует большинство классов
 map.player_initializer(CELLS['9'], Player)
 map.button_fence_initializer(BUTTON_INITIALIZER, Button, Fence)
+map.gate_initializer(Gate)
 map.element_initializer(Decoration)
 
 while not finished:
@@ -532,7 +610,7 @@ while not finished:
         if pygame.key.get_pressed()[motion] and (motion_number % 3 != 1):
             players[motion_number // 3].to_make_it_move(motion_number % 3)
 
-    # безпрерывная анимация, зарисовка персонажей, проверка, попал ли персонаж в смертельную жидкость, нажатие кнопки
+    # беспрерывная анимация, зарисовка персонажей, проверка, попал ли персонаж в смертельную жидкость, нажатие кнопки
     for count_player, player in enumerate(players):
 
         # проверка на нажатие кнопки
@@ -543,19 +621,22 @@ while not finished:
         # перемещает персонаж
         player.move()
 
+        # зарисовывает каждую ячейку
+        for list in buttons:  # перебирает каждый список из buttons
+            for button in list:
+                for gate in gates:
+                    draw.draw_cells(map.load_map('lvl1.txt'), player, count_player, button, gate)  # зарисовка каждой
+                    # игровой ячейки
+
+    for count_player, player in enumerate(players):
         # проверяет, столкнулся ли персонаж с жидкостью
         inform = player.inf()
         if not inform[3]:
             gamer_dead[count_player] = True
         else:
             draw.draw_character(count_player, inform)
-            
-        # зарисовывает каждую ячейку
-        for list in buttons:  # перебирает каждый список из buttons
-            for button in list:
-                draw.draw_cells(map.load_map('lvl1.txt'), count_player, button)  # зарисовка каждой игровой ячейки
 
-    for decoration in decorations:
+    for decoration in decorations:  # рисует декорацию
         draw.draw_element(decoration)
 
     pygame.display.update()
