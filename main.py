@@ -1,24 +1,18 @@
-from class_Gate import *
-from class_Fence import *
-from class_Decoration import *
-from class_Button import *
-from class_Draw import *
-from class_Player import *
-from class_Map import *
+from program_files.class_gate import *
+from program_files.class_fence import *
+from program_files.class_decoration import *
+from program_files.class_button import *
+from program_files.class_draw import *
+from program_files.class_player import *
+from program_files.class_map import *
 
 
 finished = False
 clock = pygame.time.Clock()
 
-players = []  # массив из игроков
-buttons = [[], [], []]  # массив из кнопок
-fences = [[], [], []]  # массив из ограды
-gates = []  # массив из ворот
-decorations = []  # массив из декоратинвых элементов
+# инициализирует большинство классов
 map = Map('lvl1.txt')  # передает классу Map информацию об уровне
 draw = Draw()  # класс отрисовки
-
-# инициализирует большинство классов
 map.player_initializer(CELLS['9'], Player, players)
 map.button_fence_initializer(BUTTON_INITIALIZER, Button, buttons, Fence, fences)
 map.gate_initializer(Gate, gates)
@@ -35,7 +29,8 @@ while not finished:
             for fence in fences[list_count]:  # перебирает каждую баррикаду из списка. в списке все привязаны к одной
                 # кнопке
 
-                map.draw_fence(fence, button)
+                key_number, angle = map.treatment_fence(fence, button)
+                draw.draw_fence(fence, key_number, angle)
 
     # проверяет дозволенные направление движения
     for count_player, player in enumerate(players):
@@ -80,14 +75,15 @@ while not finished:
                     # каждой игровой ячейки
 
     for count_player, player in enumerate(players):
-        # проверяет, столкнулся ли персонаж с жидкостью
+
+        # проверяет, столкнулся ли персонаж с жидкостью и остался ли персонаж в живых
         inform = player.inf()
         if not inform[3]:
-            gamer_dead[count_player] = True
+            pass
         else:
             draw.draw_character(count_player, inform)
 
-    for decoration in decorations:  # рисует декорацию
+    for decoration in decorations:  # рисует декор
         draw.draw_element(decoration)
 
     pygame.display.update()
