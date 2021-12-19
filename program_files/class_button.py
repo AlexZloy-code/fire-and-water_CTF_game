@@ -1,4 +1,4 @@
-from program_files.consntants import *
+from program_files.constants import *
 
 
 class Button:

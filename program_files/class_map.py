@@ -1,12 +1,16 @@
 from random import randint
-from program_files.consntants import *
+from program_files.constants import *
 
 
 class Map:
 
     @staticmethod
     def load_map(input_filename):
-        """ выписывает всю информацию об уровне в массив """
+        """
+        выписывает всю информацию об уровне в массив
+        входные данные:
+        input_filename - имя текстового файла, в котором хранится уровень
+        """
 
         with open(input_filename, 'r') as input_file:
             file_massive = input_file.readlines()  # массив строк
@@ -14,16 +18,30 @@ class Map:
                 file_massive[lines_count] = file_massive[lines_count].rstrip()  # удаляет в каждой строке '/n'
         return file_massive
 
+    def get_file(self):
+        """ возвращает массив строк уровня """
+
+        return self.storage_const
+
     def __init__(self, input_filename):
         """
         информация о классе
         self.storage - массив строк
+        входные данные:
+        input_filename - имя текстового файла, в котором хранится уровень
         """
 
+        self.storage_const = self.load_map(input_filename)
         self.storage = self.load_map(input_filename)
 
-    def player_initializer(self, symbols, stuff, players):
-        """ помещает в массив персонажей всех персонажей """
+    def player_initializer(self, symbols, obj_player, players):
+        """
+        помещает в массив персонажей всех персонажей
+        входные данные:
+        symbols - массив символов-инициализаторов (в данном случае он один и равно '9')
+        obj_player - класс игрок Player
+        players - массив элемента класса Player
+        """
 
         y_file = -1  # y_file - координата объекта по y
         for string in self.storage:
@@ -35,11 +53,13 @@ class Map:
                     if letter == symbol:
                         x = x_file * DELTA
                         y = y_file * DELTA
-                        obj = stuff(x, y)
+                        obj = obj_player(x, y)
                         players.append(obj)
 
     def button_fence_initializer(self, symbols, obj_button, buttons, obj_fence, fences):
-        """ помещает в массив класса соответствующий объект: button, fence, door """
+        """
+        помещает в массив класса соответствующий объект: button, fence, door
+        """
 
         y_file = -1  # y_file - координата объекта по y
         for string in self.storage:
@@ -85,7 +105,7 @@ class Map:
         if len(gates) < 2:  # рекурсия сделано специально, чтобы первыми вратами заиницилизировались зеленые врата 'v'
             self.gate_initializer(obj_gate, gates)
 
-    def element_initializer(self, obj_decoration, decorations):
+    def decoration_initializer(self, obj_decoration, decorations):
         """ помещает в массив декорации каждую декорацию """
 
         y_file = -1  # y_file - координата ограды по y - 1

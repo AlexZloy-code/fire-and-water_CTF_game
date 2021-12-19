@@ -13,3 +13,8 @@ class Gate:
         self.x_lattice = 0
         self.y_lattice = 0
         self.letter = letter
+
+    def get_info(self):
+        """ возвращает координаты правого верхнего угла поверхности решетки lattice_surface """
+
+        return self.y_lattice

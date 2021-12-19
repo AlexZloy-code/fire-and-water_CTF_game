@@ -1,4 +1,4 @@
-from program_files.consntants import *
+from program_files.constants import *
 
 
 class Player:
@@ -16,6 +16,7 @@ class Player:
         self.north, self.south, self.west, self.east - возможность прыгнуть вверх, упасть вниз, убежать влево,
         убежать вправо
         self.alive - жив ли персонаж или нет
+        self.x_start, self.y_start - начальные координаты
         """
 
         self.x = x
@@ -29,6 +30,15 @@ class Player:
         self.south = False
         self.west = False
         self.east = False
+        self.alive = True
+        self.x_start = x
+        self.y_start = y
+
+    def set_start_data(self):
+        """ задает персонажу начальные данные """
+
+        self.x = self.x_start
+        self.y = self.y_start
         self.alive = True
 
     def set_possibility(self, abilities):
@@ -72,7 +82,8 @@ class Player:
 
         if self.south and self.vy >= 0:
             self.y += self.vy
-            self.vy += 1
+            if self.vy < 10:
+                self.vy += 1
         elif not self.south and self.vy >= 0:
             self.vy = 0
             self.y -= self.y % DELTA

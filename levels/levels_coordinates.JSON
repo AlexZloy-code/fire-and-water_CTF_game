@@ -1,0 +1,16 @@
+{
+	"levels": [
+	{
+	"level": "levels//lvl1.txt",
+	"activated": true,
+	"x": 155,
+	"y": 475
+	},
+	{
+	"level": "levels//lvl2.txt",
+	"activated": false,
+	"x": 202,
+	"y": 405
+	}
+	]
+}
