@@ -1,5 +1,0 @@
-Python 3.9
-Import json
-Import pygame 2.1.0
-From random import randint
-
