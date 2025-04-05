@@ -45,7 +45,8 @@ while not finished:
                 CONNECTION,
                 PAUSE,
                 NUMBER,
-                LEVEL_CHOICE
+                LEVEL_CHOICE,
+                level
             )
         elif GAME_IS_OVER:  # если оба персонажа достиглы выхода
             if y == -120:
@@ -57,7 +58,8 @@ while not finished:
                     CONNECTION,
                     PAUSE,
                     NUMBER,
-                    LEVEL_CHOICE
+                    LEVEL_CHOICE,
+                    level
                 )  # True - победный интерфейс
 
             else:  # если персонажи мертвы (персонаж мертв)
@@ -69,7 +71,8 @@ while not finished:
                     CONNECTION,
                     PAUSE,
                     NUMBER,
-                    LEVEL_CHOICE
+                    LEVEL_CHOICE,
+                    level
                 )  # False - мертвый интерфейс
 
 pygame.quit()

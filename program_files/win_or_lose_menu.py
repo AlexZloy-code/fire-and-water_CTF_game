@@ -2,7 +2,7 @@ from program_files.initializer_command import *
 from program_files.constants import *
 
 
-def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE, NUMBER, LEVEL_CHOICE):
+def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE, NUMBER, LEVEL_CHOICE, level):
     """
     функция воспроизовдит часть игры, когда персонаж умер
     SET_TIME - время начала отсчета
@@ -18,28 +18,35 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
     """
 
     for count_player, player in enumerate(players[NUMBER]):
-        for list in button_massive[NUMBER]:  # перебирает каждый список из buttons
+        # перебирает каждый список из buttons
+        for list in button_massive[NUMBER]:
             for button in list:
                 for gate in gates[NUMBER]:
-                    draw.draw_cells(map.get_file()[NUMBER], player, count_player, button, gate, gates, NUMBER)
+                    draw.draw_cells(
+                        map.get_file()[NUMBER], player, count_player, button, gate, gates, NUMBER)
                     # зарисовка каждой игровой ячейки
 
     for decoration in decorations[NUMBER]:  # рисует декор
         draw.draw_element(decoration)
     draw.draw_pause_button()  # отрисовка кнопки пазуы
 
-    dark_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)  # создание темной поверхности, будет наложена на
+    # создание темной поверхности, будет наложена на
+    dark_screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     # игровое окно, если выскакивает окно паузы, победы или поражения
 
     dark_screen.fill(0)  # делает эту поверхность прозрачной
-    pygame.draw.rect(dark_screen, (0, 0, 0, 88), (0, 0, WIDTH, HEIGHT))  # отрисовка темного прямоугольника
+    # отрисовка темного прямоугольника
+    pygame.draw.rect(dark_screen, (0, 0, 0, 88), (0, 0, WIDTH, HEIGHT))
     screen.blit(dark_screen, (0, 0))
 
     if SET_TIME == 0:
-        SET_TIME = pygame.time.get_ticks()  # задаем начало отсчета работы с менюшкой "поражения"
-    delta_time = pygame.time.get_ticks() - SET_TIME  # рабочий временной промежуток работы с менюшкой "поражения"
+        # задаем начало отсчета работы с менюшкой "поражения"
+        SET_TIME = pygame.time.get_ticks()
+    # рабочий временной промежуток работы с менюшкой "поражения"
+    delta_time = pygame.time.get_ticks() - SET_TIME
     if delta_time > 100:
-        draw.draw_win_or_lose_menu(menu, delta_time, win, PAUSE)  # отрисовка менюшки"
+        draw.draw_win_or_lose_menu(
+            menu, delta_time, win, level, PAUSE)  # отрисовка менюшки"
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -47,7 +54,8 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
             return SET_TIME, GAME_IS_OVER, finished, CONNECTION
         if event.type == pygame.MOUSEBUTTONDOWN:  # работа с кнопками менюшки
             size1, size2, size3 = menu.get_size_info()  # размер кнопки менюшки
-            coordinates1, coordinates2, coordinates3 = menu.get_coordinates_info()  # координаты кнопок менюшки
+            # координаты кнопок менюшки
+            coordinates1, coordinates2, coordinates3 = menu.get_coordinates_info()
             CONNECTION = True  # мышь зафиксирована, можно регулировать громкость
             if PAUSE:
                 if coordinates1[0] < event.pos[0] < coordinates1[0] + size1[0] and \
@@ -91,6 +99,7 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
 
                     GAME_IS_OVER = False  # игра возобновляется
                     SET_TIME = 0  # время отсчета обнулилось
+
                     for player in players[NUMBER]:
                         player.set_start_data()  # возвращает игроков в начальное положение
                     menu.set_start_data()  # возвращает менюшку в начальное положение
@@ -100,7 +109,7 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
         if event.type == pygame.MOUSEMOTION and CONNECTION:
             slider_coordinates = music.get_slider_coordinates()  # получает координаты слайдера
             if slider_coordinates[0] < event.pos[0] < slider_coordinates[0] + 40 and \
-                slider_coordinates[1] < event.pos[1] < slider_coordinates[1] + 40:  # если курсор мыши попал по слайдеру
+                    slider_coordinates[1] < event.pos[1] < slider_coordinates[1] + 40:  # если курсор мыши попал по слайдеру
 
                 music.slider_motion(event.pos[0])  # перемещает слайдер
 
@@ -110,7 +119,8 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
     pygame.display.update()
     screen.fill((255, 255, 255))
 
-    return SET_TIME, GAME_IS_OVER, finished, CONNECTION, PAUSE, LEVEL_CHOICE  # SET_TIME - возвращает время отсчета
+    # SET_TIME - возвращает время отсчета
+    return SET_TIME, GAME_IS_OVER, finished, CONNECTION, PAUSE, LEVEL_CHOICE
     # работы с менюшкой, GAME_IS_OVER - окончание/продолжение работы с менюшкой поражения,
     # finished - окончание/продолжение игры, CONNECTION - зажат ли курсор мыши или нет, PAUSE - приостановлена ли игра
     # на паузу или нет

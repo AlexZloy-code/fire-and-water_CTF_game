@@ -21,8 +21,10 @@ class Draw:
         """
 
         self.wall = pygame.image.load('pictures//wall//wall.jpg')
-        self.background = pygame.image.load('pictures//backgrounds//background3.jpg')
-        self.level_background = pygame.image.load('pictures//menu//background.png')
+        self.background = pygame.image.load(
+            'pictures//backgrounds//background3.jpg')
+        self.level_background = pygame.image.load(
+            'pictures//menu//background.png')
         self.snowflakes = [
             pygame.image.load('pictures//menu//not_activated.png'),
             pygame.image.load('pictures//menu//activated.png')
@@ -30,7 +32,8 @@ class Draw:
         self.wave_blue = pygame.image.load('pictures//waves//blue.png')
         self.wave_green = pygame.image.load('pictures//waves//green.png')
         self.wave_pink = pygame.image.load('pictures//waves//pink.png')
-        self.pause_button = pygame.image.load('pictures//menu//pause_button.png')
+        self.pause_button = pygame.image.load(
+            'pictures//menu//pause_button.png')
         self.character_images = [
             pygame.image.load('pictures//characters//ch1_down.png'),
             pygame.image.load('pictures//characters//ch1_stay.png'),
@@ -93,17 +96,22 @@ class Draw:
         for line_count, string in enumerate(file_massive):
             for letter_count, letter in enumerate(string):
                 if letter == CELLS['1']:  # отрисовывает все стены или полы
-                    screen.blit(self.wall, (DELTA * letter_count, DELTA * line_count))
+                    screen.blit(
+                        self.wall, (DELTA * letter_count, DELTA * line_count))
                 elif letter == CELLS['B']:  # отрисовывает голубую жидкость
                     wave_surface.blit(self.wave_blue, (dx, 0))
-                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
+                    screen.blit(
+                        wave_surface, (DELTA * letter_count, DELTA * line_count))
                 elif letter == CELLS['G']:  # отрисовывает зеленую жидкость
                     wave_surface.blit(self.wave_green, (dx, 0))
-                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
+                    screen.blit(
+                        wave_surface, (DELTA * letter_count, DELTA * line_count))
                 elif letter == CELLS['P']:  # отрисовывает розовую жидкость
                     wave_surface.blit(self.wave_pink, (dx, 0))
-                    screen.blit(wave_surface, (DELTA * letter_count, DELTA * line_count))
-                elif letter == obj_but.letter and (not obj_but.pushed[0] and not obj_but.pushed[1]):  # отрисовывает
+                    screen.blit(
+                        wave_surface, (DELTA * letter_count, DELTA * line_count))
+                # отрисовывает
+                elif letter == obj_but.letter and (not obj_but.pushed[0] and not obj_but.pushed[1]):
                     # кнопки
 
                     for key_number, key in enumerate(BUTTON_INITIALIZER):
@@ -164,7 +172,8 @@ class Draw:
         """
 
         player_surface = self.decoration_images[obj_decoration.decoration_number]
-        screen.blit(player_surface, (obj_decoration.x * DELTA, obj_decoration.y * DELTA))
+        screen.blit(player_surface, (obj_decoration.x *
+                    DELTA, obj_decoration.y * DELTA))
 
     def draw_fence(self, obj_fence, key_number, angle):
         """
@@ -179,9 +188,11 @@ class Draw:
         if key_number == 'no_image_number':  # если баррикада не активирована
             pass
         elif angle == 0:
-            screen.blit(self.fence_images[key_number], (obj_fence.x, obj_fence.y))
+            screen.blit(self.fence_images[key_number],
+                        (obj_fence.x, obj_fence.y))
         elif angle == 90:
-            screen.blit(pygame.transform.rotate(self.fence_images[key_number], angle), (obj_fence.x, obj_fence.y))
+            screen.blit(pygame.transform.rotate(
+                self.fence_images[key_number], angle), (obj_fence.x, obj_fence.y))
 
     def draw_gates(self, obj_player, obj_gate, count, gates, NUMBER):
         """
@@ -210,14 +221,15 @@ class Draw:
                     obj_gate.y_lattice += 1
 
             # отображает все поверхности на игровое окно
-            lattice_surface = pygame.Surface((40, 60), pygame.SRCALPHA)  # поверхность для изображения решетки,
+            # поверхность для изображения решетки,
+            lattice_surface = pygame.Surface((40, 60), pygame.SRCALPHA)
             # по которой будет скользить изображение
 
             lattice_surface.blit(self.gate_images[2], (0, obj_gate.y_lattice))
             screen.blit(gate_surface, (obj_gate.x, obj_gate.y - 10))
             screen.blit(lattice_surface, (obj_gate.x + 11, obj_gate.y))
 
-    def draw_win_or_lose_menu(self, obj_menu, time, win, PAUSE):
+    def draw_win_or_lose_menu(self, obj_menu, time, win, level, PAUSE):
         """
         отрисовка окна поражения
         obj_menu - класс менюшки Menu
@@ -236,14 +248,33 @@ class Draw:
 
         if win:  # если оба персонажа достигли своих врат и игра требует победную менюшку
             screen.blit(self.menu_images[1], (obj_menu.x, obj_menu.y))
+
+            with open(LEVELS_FILE, 'r') as file:
+                loaded = json.load(file)
+
+            nums = LEVELS_DICT[str(int(level[11:-4]))]
+
+            for num in nums:
+                for i in range(len(loaded['levels'])):
+                    if loaded['levels'][i]['level'] == (level[:11] + num + level[-4:]):
+                        loaded['levels'][i]['activated'] = True
+                        break
+
+            with open(LEVELS_FILE, 'w') as file:
+                file.write(json.dumps(loaded))
+
+            win = False
         elif not win and not PAUSE:  # если какой-то персонаж умер, возвращает менюшку поражения
             screen.blit(self.menu_images[0], (obj_menu.x, obj_menu.y))
         elif PAUSE:  # если пауза
             screen.blit(self.menu_images[2], (obj_menu.x, obj_menu.y))
-        screen.blit(obj_menu.retry_surface, (obj_menu.retry_x, obj_menu.retry_y))
-        screen.blit(obj_menu.back_to_menu_surface, (obj_menu.back_to_menu_x, obj_menu.back_to_menu_y))
+        screen.blit(obj_menu.retry_surface,
+                    (obj_menu.retry_x, obj_menu.retry_y))
+        screen.blit(obj_menu.back_to_menu_surface,
+                    (obj_menu.back_to_menu_x, obj_menu.back_to_menu_y))
         if PAUSE:
-            screen.blit(obj_menu.contin_surface, (obj_menu.contin_x, obj_menu.contin_y))
+            screen.blit(obj_menu.contin_surface,
+                        (obj_menu.contin_x, obj_menu.contin_y))
 
     def draw_music_interface(self, obj_music):
         """
@@ -263,5 +294,6 @@ class Draw:
         )  # рисует слайдер
         screen.blit(
             obj_music.music_interface_surface,
-            (obj_music.music_interface_surface_x, obj_music.music_interface_surface_y)
+            (obj_music.music_interface_surface_x,
+             obj_music.music_interface_surface_y)
         )

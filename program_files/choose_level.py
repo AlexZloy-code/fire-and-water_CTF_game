@@ -9,7 +9,8 @@ def choose_level():
         if event.type == pygame.QUIT:
             return True, ''
         if event.type == pygame.MOUSEBUTTONDOWN:
-            with open(LEVELS_FILE, 'r') as file:  # открывается файл, в котором хранятся координаты снежинок,
+            # открывается файл, в котором хранятся координаты снежинок,
+            with open(LEVELS_FILE, 'r') as file:
                 # определяющие загрузку уровня
 
                 loaded = json.load(file)  # массив данных json файла
@@ -17,8 +18,10 @@ def choose_level():
                 x = level['x']
                 y = level['y']
                 size = 60  # размер снежинки равне size x size
-                if x <= event.pos[0] <= x + size and y <= event.pos[1] <= y + size:  # если курсор попал по снежинке
-                    return False, level['level']  # возвращает finished = False, название уровня
+                # если курсор попал по снежинке
+                if x <= event.pos[0] <= x + size and y <= event.pos[1] <= y + size:
+                    # возвращает finished = False, название уровня
+                    return False, level['level']
 
     pygame.display.update()
 
