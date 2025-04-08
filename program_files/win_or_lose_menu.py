@@ -2,7 +2,7 @@ from program_files.initializer_command import *
 from program_files.constants import *
 
 
-def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE, NUMBER, LEVEL_CHOICE, level):
+def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE, NUMBER, LEVEL_CHOICE, level, k_r=False):
     """
     функция воспроизовдит часть игры, когда персонаж умер
     SET_TIME - время начала отсчета
@@ -52,6 +52,11 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
         if event.type == pygame.QUIT:
             finished = True
             return SET_TIME, GAME_IS_OVER, finished, CONNECTION
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                k_r = True
+                break
+
         if event.type == pygame.MOUSEBUTTONDOWN:  # работа с кнопками менюшки
             size1, size2, size3 = menu.get_size_info()  # размер кнопки менюшки
             # координаты кнопок менюшки
@@ -118,6 +123,14 @@ def win_or_lose_command(SET_TIME, GAME_IS_OVER, win, finished, CONNECTION, PAUSE
 
     pygame.display.update()
     screen.fill((255, 255, 255))
+
+    if k_r:
+        GAME_IS_OVER = False  # игра возобновляется
+        SET_TIME = 0  # время отсчета обнулилось
+        PAUSE = False
+        for player in players[NUMBER]:
+            player.set_start_data()  # возвращает игроков в начальное положение
+        menu.set_start_data()  # возвращает менюшку в начальное положение
 
     # SET_TIME - возвращает время отсчета
     return SET_TIME, GAME_IS_OVER, finished, CONNECTION, PAUSE, LEVEL_CHOICE

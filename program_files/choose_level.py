@@ -15,13 +15,14 @@ def choose_level():
 
                 loaded = json.load(file)  # массив данных json файла
             for level in loaded['levels']:
-                x = level['x']
-                y = level['y']
-                size = 60  # размер снежинки равне size x size
-                # если курсор попал по снежинке
-                if x <= event.pos[0] <= x + size and y <= event.pos[1] <= y + size:
-                    # возвращает finished = False, название уровня
-                    return False, level['level']
+                if not level['hide']:
+                    x = level['x']
+                    y = level['y']
+                    size = 60  # размер снежинки равне size x size
+                    # если курсор попал по снежинке
+                    if x <= event.pos[0] <= x + size and y <= event.pos[1] <= y + size:
+                        # возвращает finished = False, название уровня
+                        return False, level['level']
 
     pygame.display.update()
 

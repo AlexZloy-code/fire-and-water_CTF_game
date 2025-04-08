@@ -1,4 +1,5 @@
 from program_files.initializer_command import *
+from program_files.win_or_lose_menu import *
 
 
 def playing_command(finished, PAUSE, NUMBER):
@@ -11,21 +12,25 @@ def playing_command(finished, PAUSE, NUMBER):
     """
 
     # рисует на screen и в файле баррикады
-    for list_count, list in enumerate(button_massive[NUMBER]):  # перебирает каждый список из buttons. в каждом списке
+    # перебирает каждый список из buttons. в каждом списке
+    for list_count, list in enumerate(button_massive[NUMBER]):
         # свой символ
 
         for button in list:  # перебирает все кнопки с одинаковым символом-индетификатором
-            for fence in fence_massive[NUMBER][list_count]:  # перебирает каждую баррикаду из списка. в списке все
+            # перебирает каждую баррикаду из списка. в списке все
+            for fence in fence_massive[NUMBER][list_count]:
                 # привязаны к одной кнопке
 
-                key_number, angle = map.treatment_fence(fence, button, NUMBER)  # получает номер кнопки, к которой
+                key_number, angle = map.treatment_fence(
+                    fence, button, NUMBER)  # получает номер кнопки, к которой
                 # привязана баррикада, получает угол
 
                 draw.draw_fence(fence, key_number, angle)
 
     # проверяет дозволенные направление движения
     for count_player, player in enumerate(players[NUMBER]):
-        for list in button_massive[NUMBER]:  # перебирает каждый список из buttons
+        # перебирает каждый список из buttons
+        for list in button_massive[NUMBER]:
             for button in list:
                 map.collision(player, count_player, button, NUMBER)
 
@@ -35,15 +40,21 @@ def playing_command(finished, PAUSE, NUMBER):
             finished = True
             return finished, PAUSE
         if event.type == pygame.KEYDOWN:
-            for motion_number, motion in enumerate(gamer1_keys + gamer2_keys):  # по нажатию кнопки w или ARROW_UP
+            # if event.key == pygame.K_r:
+            #     return SET_TIME, GAME_IS_OVER, finished, CONNECTION, PAUSE, LEVEL_CHOICE
+            #     # по нажатию кнопки w или ARROW_UP
+            for motion_number, motion in enumerate(gamer1_keys + gamer2_keys):
                 # персонаж прыгает. motion - кнопка из списка (gamer1_keys + gamer2_keys), motion_number - его номер
 
                 if event.key == motion and motion_number == 1:
-                    players[NUMBER][motion_number // 3].to_make_it_move(motion_number % 3)
+                    players[NUMBER][motion_number //
+                                    3].to_make_it_move(motion_number % 3)
                 if event.key == motion and motion_number == 4:
-                    players[NUMBER][motion_number // 3].to_make_it_move(motion_number % 3)
+                    players[NUMBER][motion_number //
+                                    3].to_make_it_move(motion_number % 3)
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if WIDTH // 2 - 40 <= event.pos[0] <= WIDTH // 2 + 40 and 0 <= event.pos[1] <= 40:  # если курсор
+            # если курсор
+            if WIDTH // 2 - 40 <= event.pos[0] <= WIDTH // 2 + 40 and 0 <= event.pos[1] <= 40:
                 # мыши попал по кнопке паузы, что расположена наверху игрового окна
 
                 PAUSE = True
@@ -51,13 +62,15 @@ def playing_command(finished, PAUSE, NUMBER):
     # непрерывное управление персонажами по оси Ох
     for motion_number, motion in enumerate(gamer1_keys + gamer2_keys):
         if pygame.key.get_pressed()[motion] and (motion_number % 3 != 1):
-            players[NUMBER][motion_number // 3].to_make_it_move(motion_number % 3)
+            players[NUMBER][motion_number //
+                            3].to_make_it_move(motion_number % 3)
 
     # беспрерывная анимация, зарисовка персонажей, проверка, попал ли персонаж в смертельную жидкость, нажатие кнопки
     for count_player, player in enumerate(players[NUMBER]):
 
         # проверка на нажатие кнопки
-        for list in button_massive[NUMBER]:  # перебирает каждый список из buttons
+        # перебирает каждый список из buttons
+        for list in button_massive[NUMBER]:
             for button in list:
                 map.collision(player, count_player, button, NUMBER)
 
@@ -65,10 +78,12 @@ def playing_command(finished, PAUSE, NUMBER):
         player.move()
 
         # зарисовывает каждую ячейку
-        for list in button_massive[NUMBER]:  # перебирает каждый список из buttons
+        # перебирает каждый список из buttons
+        for list in button_massive[NUMBER]:
             for button in list:
                 for gate in gates[NUMBER]:
-                    draw.draw_cells(map.get_file()[NUMBER], player, count_player, button, gate, gates, NUMBER)
+                    draw.draw_cells(
+                        map.get_file()[NUMBER], player, count_player, button, gate, gates, NUMBER)
                     # зарисовка каждой игровой ячейки
 
     for count_player, player in enumerate(players[NUMBER]):
@@ -87,4 +102,5 @@ def playing_command(finished, PAUSE, NUMBER):
     pygame.display.update()
     screen.fill((255, 255, 255))
 
-    return finished, PAUSE  # finished - окончена ли игра или нет, PAUSE - Остановлена ли игра на паузу или нет
+    # finished - окончена ли игра или нет, PAUSE - Остановлена ли игра на паузу или нет
+    return finished, PAUSE

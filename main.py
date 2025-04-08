@@ -23,6 +23,40 @@ while not finished:
                 NUMBER = lev_count  # номер уровня из массива FILES_NAME
     if not LEVEL_CHOICE:  # если уровень уже выбран
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # если курсор
+                if WIDTH // 2 - 40 <= event.pos[0] <= WIDTH // 2 + 40 and 0 <= event.pos[1] <= 40:
+                    # мыши попал по кнопке паузы, что расположена наверху игрового окна
+
+                    PAUSE = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    SET_TIME, GAME_IS_OVER, finished, CONNECTION, PAUSE, LEVEL_CHOICE = win_or_lose_command(
+                        SET_TIME,
+                        GAME_IS_OVER,
+                        False,
+                        finished,
+                        CONNECTION,
+                        PAUSE,
+                        NUMBER,
+                        LEVEL_CHOICE,
+                        level,
+                        k_r=True
+                    )
+                    break
+
+                for motion_number, motion in enumerate(gamer1_keys + gamer2_keys):
+                    # персонаж прыгает. motion - кнопка из списка (gamer1_keys + gamer2_keys), motion_number - его номер
+
+                    if event.key == motion and motion_number == 1:
+                        players[NUMBER][motion_number //
+                                        3].to_make_it_move(motion_number % 3)
+                    if event.key == motion and motion_number == 4:
+                        players[NUMBER][motion_number //
+                                        3].to_make_it_move(motion_number % 3)
         draw.draw_background()  # рисует фон
 
         for player in players[NUMBER]:

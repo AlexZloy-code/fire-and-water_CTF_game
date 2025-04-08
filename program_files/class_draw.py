@@ -138,10 +138,11 @@ class Draw:
         with open(filename, 'r') as file:
             loaded = json.load(file)
         for level in loaded['levels']:
-            if level['activated']:
-                screen.blit(self.snowflakes[1], (level['x'], level['y']))
-            else:
-                screen.blit(self.snowflakes[0], (level['x'], level['y']))
+            if not level['hide']:
+                if level['activated']:
+                    screen.blit(self.snowflakes[1], (level['x'], level['y']))
+                else:
+                    screen.blit(self.snowflakes[0], (level['x'], level['y']))
 
     def draw_pause_button(self):
         """ рисует кнопку паузы """
@@ -253,11 +254,13 @@ class Draw:
                 loaded = json.load(file)
 
             nums = LEVELS_DICT[str(int(level[11:-4]))]
+            loaded['levels'][int(level[11:-4]) - 1]['activated'] = True
 
             for num in nums:
                 for i in range(len(loaded['levels'])):
                     if loaded['levels'][i]['level'] == (level[:11] + num + level[-4:]):
-                        loaded['levels'][i]['activated'] = True
+                        loaded['levels'][i]['hide'] = False
+
                         break
 
             with open(LEVELS_FILE, 'w') as file:
